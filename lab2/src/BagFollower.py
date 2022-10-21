@@ -7,7 +7,7 @@ from ackermann_msgs.msg import AckermannDriveStamped
 # Name of the topic that should be extracted from the bag
 BAG_TOPIC = '/car/mux/ackermann_cmd_mux/input/teleop'
 PUB_TOPIC = '/car/mux/ackermann_cmd_mux/input/teleop'
-PUB_RATE = 5  # The rate at which messages should be published
+PUB_RATE = 40  # The rate at which messages should be published
 
 # Loads a bag file, reads the msgs from the specified topic, and republishes them
 
@@ -46,4 +46,3 @@ if __name__ == '__main__':
     follow_backwards = rospy.get_param("follow_backwards")
 
     follow_bag(bag_path, follow_backwards)
-

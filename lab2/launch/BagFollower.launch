@@ -1,6 +1,6 @@
 <launch>
 	<!-- Launch a BagFollower node and pass any necessary parameters -->
-	<param name="bag_path" type="string" value="/home/robot/catkin_ws/src/shared/ee-pmp-lab-2/bag/figure8.bag" />
-	<param name="follow_backwards" type="bool" value="True" />
+	<param name="bag_path" type="string" value="/home/robot/catkin_ws/src/shared/lab2/bag/figure8.bag" />
+	<param name="follow_backwards" type="bool" value="False" />
 	<node name="BagFollower" pkg="lab2" type="BagFollower.py" output="screen" />
 </launch>
