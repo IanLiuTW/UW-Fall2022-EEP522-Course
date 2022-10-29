@@ -1,0 +1,21 @@
+<launch>
+	<arg name="plan_lookahead" default="5" /> <!-- Starting val: 5 -->
+	<arg name="translation_weight" default= "1.0" /> <!-- Starting val: 1.0 -->
+	<arg name="rotation_weight" default= "0.2" /> <!-- Starting val: 0.0 -->
+    <arg name="kp" default="9" /> <!-- Starting val: 1.0 -->
+	<arg name="ki" default= "7" /> <!-- Starting val: 0.0 -->
+	<arg name="kd" default= "7" /> <!-- Starting val: 0.0 -->
+    <arg name="error_buff_length" default="10" /> <!-- Starting val: 10 -->
+	<arg name="speed" default= "1.0" /> <!-- Default val: 1.0 -->
+
+    <param name="plan_lookahead" value="$(arg plan_lookahead)" type="int"/>
+	<param name="translation_weight" value="$(arg translation_weight)"  type="double"/>
+	<param name="rotation_weight" value="$(arg rotation_weight)" type="double"/>
+    <param name="kp" value="$(arg kp)" type="double"/>
+	<param name="ki" value="$(arg ki)"  type="double"/>
+	<param name="kd" value="$(arg kd)" type="double"/>
+    <param name="error_buff_length" value="$(arg error_buff_length)" type="int"/>
+	<param name="speed" value="$(arg speed)"  type="double"/>
+
+    <node name="line_follower" pkg="lab3" type="line_follower.py" output="screen" args="$(arg plan_lookahead) $(arg translation_weight) $(arg kp) $(arg ki) $(arg kd) $(arg error_buff_length) $(arg speed)"/>
+</launch>

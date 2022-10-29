@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import collections
+import json
 import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import rospy
 from ackermann_msgs.msg import AckermannDriveStamped
@@ -65,6 +67,8 @@ class LineFollower:
         # Create a subscriber to pose_topic, with callback 'self.pose_cb'
         self.pose_sub = rospy.Subscriber(pose_topic, PoseStamped, self.pose_cb)
 
+        self.errors = []
+
     '''
   Computes the error based on the current pose of the car
     cur_pose: The current pose of the car, represented as a numpy array [x,y,theta]
@@ -81,12 +85,22 @@ class LineFollower:
         #   Will want to perform a coordinate transformation to determine if
         #   the configuration is in front or behind the robot
         # If the configuration is in front of the robot, break out of the loop
+        cur_x, cur_y, cur_theta = cur_pose
+        rot_mat = utils.rotation_matrix(cur_theta)
         while len(self.plan) > 0:
             # YOUR CODE HERE
-            pass
+            # Notes: rotation matrices are orthogonal therefore inv(rot_mat) = rot_mat.T
+            plan_x, plan_y = self.plan[0][0], self.plan[0][1]
+            config = np.matmul(rot_mat.T, np.array(
+                [[plan_x - cur_x], [plan_y - cur_y]]))
+            if config[0] > 0:
+                break
+            self.plan.pop(0)
 
         # Check if the plan is empty. If so, return (False, 0.0)
         # YOUR CODE HERE
+        if not self.plan:
+            return (False, 0.0)
 
         # At this point, we have removed configurations from the plan that are behind
         # the robot. Therefore, element 0 is the first configuration in the plan that is in
@@ -97,14 +111,22 @@ class LineFollower:
 
         # Compute the translation error between the robot and the configuration at goal_idx in the plan
         # YOUR CODE HERE
+        plan_x, plan_y = self.plan[goal_idx][0], self.plan[goal_idx][1]
+        config = np.matmul(rot_mat.T, np.array(
+            [[plan_x - cur_x], [plan_y - cur_y]]))
+        translation_error = config[1]
 
         # Compute the total error
         # Translation error was computed above
         # Rotation error is the difference in yaw between the robot and goal configuration
         #   Be carefult about the sign of the rotation error
         # YOUR CODE HERE
-        error =  # self.translation_weight * translation_error + self.rotation_weight * rotation_error
+        rotation_error = self.plan[goal_idx][2] - cur_theta
 
+        error = self.translation_weight * translation_error + \
+            self.rotation_weight * rotation_error
+
+        self.errors.append(error.item(0))
         return True, error
 
     '''
@@ -120,6 +142,10 @@ class LineFollower:
         # the most recent error stored in self.error_buff, and the most recent time
         # stored in self.error_buff
         # YOUR CODE HERE
+        deriv_error = 0
+        if self.error_buff:
+            recent_error, recent_time = self.error_buff[-1]
+            deriv_error = (error - recent_error) / (now - recent_time)
 
         # Add the current error to the buffer
         self.error_buff.append((error, now))
@@ -127,10 +153,15 @@ class LineFollower:
         # Compute the integral error by applying rectangular integration to the elements
         # of self.error_buff: https://chemicalstatistician.wordpress.com/2014/01/20/rectangular-integration-a-k-a-the-midpoint-rule/
         # YOUR CODE HERE
+        integ_error = 0
+        for i in range(1, len(self.error_buff)):
+            error_sum = self.error_buff[i][0] + self.error_buff[i-1][0]
+            time_diff = self.error_buff[i][1] - self.error_buff[i-1][1]
+            integ_error += 0.5 * error_sum * time_diff
 
         # Compute the steering angle as the sum of the pid errors
         # YOUR CODE HERE
-        return  # self.kp*error + self.ki*integ_error + self.kd * deriv_error
+        return self.kp*error + self.ki*integ_error + self.kd * deriv_error
 
     '''
   Callback for the current pose of the car
@@ -152,14 +183,38 @@ class LineFollower:
         delta = self.compute_steering_angle(error)
 
         # Setup the control message
-        ads = AckermannDriveStamped()
-        ads.header.frame_id = '/map'
-        ads.header.stamp = rospy.Time.now()
-        ads.drive.steering_angle = delta
-        ads.drive.speed = self.speed
+        cmd_msg = AckermannDriveStamped()
+        cmd_msg.header.frame_id = '/map'
+        cmd_msg.header.stamp = rospy.Time.now()
+        cmd_msg.drive.steering_angle = delta
+        cmd_msg.drive.speed = self.speed
 
         # Send the control message
-        self.cmd_pub.publish(ads)
+        self.cmd_pub.publish(cmd_msg)
+
+    def plot_error(self):
+        # print(self.errors)
+        plt.plot(self.errors, label='' +
+                 'kp=' + str(self.kp) +
+                 ',ki=' + str(self.ki) +
+                 ',kd=' + str(self.kd))
+        plt.xlabel('Iteration')
+        plt.ylabel('Error')
+        plt.ylim((-1.5, 1.5))
+        plt.legend()
+        plt.savefig('/home/robot/Desktop/' +
+                    'kp=' + str(self.kp) +
+                    ',ki=' + str(self.ki) +
+                    ',kd=' + str(self.kd) +
+                    '.png')
+
+    def dump_error(self):
+        with open('/home/robot/Desktop/' +
+                  'kp=' + str(self.kp) +
+                  ',ki=' + str(self.ki) +
+                  ',kd=' + str(self.kd) +
+                  '.txt', 'w') as f:
+            json.dump(self.errors, f)
 
 
 def main():
@@ -175,14 +230,24 @@ def main():
     # YOUR CODE HERE
     plan_topic = "/planner_node/car_plan"  # Default val: '/planner_node/car_plan'
     pose_topic = "/car/car_pose"  # Default val: '/car/pose'
-    plan_lookahead =  # Starting val: 5
-    translation_weight =  # Starting val: 1.0
-    rotation_weight =  # Starting val: 0.0
-    kp =  # Startinig val: 1.0
-    ki =  # Starting val: 0.0
-    kd =  # Starting val: 0.0
-    error_buff_length =  # Starting val: 10
-    speed =  # Default val: 1.0
+
+    plan_lookahead = 5  # Starting val: 5
+    translation_weight = 1.0  # Starting val: 1.0
+    rotation_weight = 0.0  # Starting val: 0.0
+    kp = 1.0  # Startinig val: 1.0
+    ki = 0.0  # Starting val: 0.0
+    kd = 0.0  # Starting val: 0.0
+    error_buff_length = 10  # Starting val: 10
+    speed = 1.0  # Default val: 1.0
+
+    plan_lookahead = rospy.get_param("plan_lookahead")
+    translation_weight = rospy.get_param("translation_weight")
+    rotation_weight = rospy.get_param("rotation_weight")
+    kp = rospy.get_param("kp")
+    ki = rospy.get_param("ki")
+    kd = rospy.get_param("kd")
+    error_buff_length = rospy.get_param("error_buff_length")
+    speed = rospy.get_param("speed")
 
     # Waits for ENTER key press
     raw_input("Press Enter to when plan available...")
@@ -192,6 +257,15 @@ def main():
     #     Each array is of the form [x,y,theta]
     # Create a LineFollower object
     # YOUR CODE HERE
+    pose_array = rospy.wait_for_message(plan_topic, PoseArray)
+    plan = [np.array([pose.position.x, pose.position.y, utils.quaternion_to_angle(pose.orientation)])
+            for pose in pose_array.poses]
+    line_follower = LineFollower(plan, pose_topic, plan_lookahead, translation_weight,
+                                 rotation_weight, kp, ki, kd, error_buff_length, speed)
+
+    raw_input("Press Enter to plot/dump error...")
+    line_follower.plot_error()
+    line_follower.dump_error()
 
     rospy.spin()  # Prevents node from shutting down
 
