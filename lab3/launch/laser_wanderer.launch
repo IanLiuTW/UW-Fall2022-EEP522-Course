@@ -1,0 +1,21 @@
+<launch>
+	<arg name="speed" default="1.0" /> <!-- Default val: 1.0 -->
+	<arg name="min_delta" default= "-0.34" /> <!-- Default val: -0.34 -->
+	<arg name="max_delta" default= "0.341" /> <!-- Default val: 0.341 -->
+    <arg name="delta_incr" default="0.068" /> <!-- Starting val: 0.34/3 -->
+	<arg name="dt" default= "0.01" /> <!-- Default val: 0.01 -->
+	<arg name="T" default= "200" /> <!-- Starting val: 300 -->
+    <arg name="compute_time" default="0.09" /> <!-- Default val: 0.09 -->
+	<arg name="laser_offset" default= "1.0" /> <!-- Starting val: 1.0 -->
+
+    <param name="speed" value="$(arg speed)" type="double"/>
+	<param name="min_delta" value="$(arg min_delta)"  type="double"/>
+	<param name="max_delta" value="$(arg max_delta)" type="double"/>
+    <param name="delta_incr" value="$(arg delta_incr)" type="double"/>
+	<param name="dt" value="$(arg dt)"  type="double"/>
+	<param name="T" value="$(arg T)" type="int"/>
+    <param name="compute_time" value="$(arg compute_time)" type="double"/>
+	<param name="laser_offset" value="$(arg laser_offset)"  type="double"/>
+
+    <node name="laser_wanderer" pkg="lab3" type="laser_wanderer.py" output="screen" args="$(arg speed) $(arg min_delta) $(arg delta_incr) $(arg dt) $(arg T) $(arg compute_time) $(arg laser_offset)"/>
+</launch>
