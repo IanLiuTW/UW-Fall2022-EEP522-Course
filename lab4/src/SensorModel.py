@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import math
 import rospy
 import range_libc
 import time
@@ -15,11 +16,20 @@ THETA_DISCRETIZATION = 112 # Discretization of scanning angle
 INV_SQUASH_FACTOR = 0.2    # Factor for helping the weight distribution to be less peaked
 
 # YOUR CODE HERE (Set these values and use them in precompute_sensor_model)
-Z_SHORT =  # Weight for short reading
-Z_MAX =  # Weight for max reading
-Z_RAND =  # Weight for random reading
-SIGMA_HIT = # Noise value for hit reading
-Z_HIT =  # Weight for hit reading
+
+Z_SHORT = 0.1  # Weight for short reading
+Z_MAX = 0.1 # Weight for max reading
+Z_RAND = 0.1  # Weight for random reading
+Z_HIT = 0.1 # Weight for hit reading
+LAMDA_SHORT = 0.1 # Lamda for unexpected obstacles
+SIGMA_HIT = 2.0 # Noise value for hit reading
+
+#Z_SHORT = 0.01  # Weight for short reading
+#Z_MAX = 0.01 # Weight for max reading
+#Z_RAND = 0.01  # Weight for random reading
+#Z_HIT = 1.0 # Weight for hit reading
+#LAMDA_SHORT = 0.01 # Lamda for unexpected obstacles
+#SIGMA_HIT = 1.0 # Noise value for hit reading
 
 ''' 
   Weights particles according to their agreement with the observed data
@@ -85,6 +95,13 @@ class SensorModel:
     #   You may choose to use self.laser_angles and self.downsampled_angles here
     # YOUR CODE HERE
 
+    self.downsampled_angles = np.array(np.linspace(msg.angle_min, msg.angle_max, len(msg.ranges))[::self.LASER_RAY_STEP], dtype=np.float32)
+
+    self.laser_angles = np.array(msg.ranges[::self.LASER_RAY_STEP], dtype=np.float32)
+    self.laser_angles[(np.isnan(self.laser_angles)) | (self.laser_angles == 0.0)] = self.MAX_RANGE_METERS
+
+    obs = (self.laser_angles, self.downsampled_angles) # range, angles
+
     self.apply_sensor_model(self.particles, obs, self.weights)
     self.weights /= np.sum(self.weights)
     
@@ -118,7 +135,32 @@ class SensorModel:
     #     observing measurement r (in pixels)
     #     when the expected measurement is d (in pixels)
     # Note that the 'self' parameter is completely unused in this function
-    
+
+    # random posibility
+
+    random_p = np.full(sensor_model_table.shape, 1.0/table_width)
+
+    # Max range possibility :uniform distribution
+    max_range = np.zeros(sensor_model_table.shape)
+    max_range[-1,:] = 1
+
+    # Measure noise :Gaussian
+    # unexpected obstacles : 
+    noise = np.zeros(sensor_model_table.shape)
+    obstacle = np.zeros(sensor_model_table.shape)
+
+    for i in range(table_width):
+      for j in range(table_width):
+        noise[i,j] = (1 / (SIGMA_HIT * np.sqrt(2*math.pi))) * np.exp((-1/2)*np.square((i-j)/SIGMA_HIT))
+        if (i <= j):
+          obstacle[i,j] = LAMDA_SHORT * np.exp(-LAMDA_SHORT*i)
+        else:
+          obstacle[i,j] = 0
+
+    # Total possibility
+    sensor_model_table = Z_RAND * random_p  + Z_HIT * noise + Z_MAX * max_range + Z_SHORT * obstacle
+    sensor_model_table = (sensor_model_table.transpose()/sensor_model_table.transpose().sum(axis=1)[:,None]).transpose()
+
     return sensor_model_table
 
   '''
