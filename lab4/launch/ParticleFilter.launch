@@ -2,12 +2,22 @@
 <launch>
 
 	<arg name="n_particles" default="500"/>
-	<arg name="n_viz_particles" default="20" />
+	<arg name="n_viz_particles" default="50" />
 	<arg name="motion_model" default="kinematic" />
+
+	
+	<arg name="odometry_topic" default="/vesc/odom" />
+	<arg name="motor_state_topic" default="/vesc/sensors/core" />
+	<arg name="servo_state_topic" default="/vesc/sensors/servo_position_command" />
+	<arg name="scan_topic" default="/scan"/>
+	
+<!-- 	
 	<arg name="odometry_topic" default="/car/vesc/odom" />
 	<arg name="motor_state_topic" default="/car/vesc/sensors/core" />
 	<arg name="servo_state_topic" default="/car/vesc/sensors/servo_position_command" />
 	<arg name="scan_topic" default="/car/scan"/>
+	 -->
+
 	<arg name="laser_ray_step" default="30"/> 
 	<arg name="exclude_max_range_rays" default="true"/>
 	<arg name="max_range_meters" default="11.0" />

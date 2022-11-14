@@ -21,6 +21,9 @@ MAP_TOPIC = "static_map"
 PUBLISH_PREFIX = '/pf/viz'
 PUBLISH_TF = True
 
+CLICKED_POSE_STD  = 1.0
+CLICKED_ANGLE_STD = 0.1
+
 '''
   Implements particle filtering for estimating the state of the robot car
 '''
@@ -118,7 +121,16 @@ class ParticleFilter():
     # Update weights in place so that all particles have the same weight and the 
     # sum of the weights is one.
     # YOUR CODE HERE
-  
+    new_particles = np.zeros(self.particles.shape)
+    x_valid, y_valid = np.where(self.permissible_region == 1)
+    samples = np.random.choice(len(x_valid), self.N_PARTICLES)
+    new_particles[:,0] = x_valid[samples]
+    new_particles[:,1] = y_valid[samples]
+    new_particles[:,2] = 2.0 * np.pi * np.random.random(self.N_PARTICLES)
+    Utils.map_to_world(new_particles, self.map_info)
+    self.particles[:] = new_particles[:]
+    self.weights[:] = 1.0 / self.N_PARTICLES
+
     self.state_lock.release()
     
   '''
@@ -153,7 +165,13 @@ class ParticleFilter():
   '''
   def expected_pose(self):
     # YOUR CODE HERE
-    pass
+    x = np.sum(self.particles[:,0]*self.weights[:])
+    y = np.sum(self.particles[:,1]*self.weights[:])
+    sin_avg = np.sum(np.sin(self.particles[:,2])*self.weights[:])
+    cos_avg = np.sum(np.cos(self.particles[:,2])*self.weights[:])
+    theta = np.arctan2(sin_avg, cos_avg)
+    return np.array([x, y, theta])
+    
     
   '''
     Callback for '/initialpose' topic. RVIZ publishes a message to this topic when you specify an initial pose 
@@ -166,7 +184,13 @@ class ParticleFilter():
     # Updates the particles in place
     # Updates the weights to all be equal, and sum to one    
     # YOUR CODE HERE
-    
+    pose = msg.pose.pose
+    print("get initial pose:", pose.position.x, pose.position.y, Utils.quaternion_to_angle(pose.orientation))
+    self.particles[:,0] = pose.position.x + np.random.normal(0.0, CLICKED_POSE_STD, self.N_PARTICLES)
+    self.particles[:,1] = pose.position.y + np.random.normal(0.0, CLICKED_POSE_STD, self.N_PARTICLES)
+    self.particles[:,2] = Utils.quaternion_to_angle(pose.orientation) + np.random.normal(0.0, CLICKED_ANGLE_STD, self.N_PARTICLES)
+    self.weights[:] = 1.0 / self.N_PARTICLES
+ 
     self.state_lock.release()
     
   '''
@@ -249,7 +273,7 @@ if __name__ == '__main__':
                       exclude_max_range_rays, max_range_meters, resample_type,
                       speed_to_erpm_offset, speed_to_erpm_gain, steering_angle_to_servo_offset,
                       steering_angle_to_servo_gain, car_length)
-  
+
   while not rospy.is_shutdown(): # Keep going until we kill it
     # Callbacks are running in separate threads
     if pf.sensor_model.do_resample: # Check if the sensor model says it's time to resample
