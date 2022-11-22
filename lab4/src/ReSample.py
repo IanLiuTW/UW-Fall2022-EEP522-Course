@@ -26,8 +26,6 @@ class ReSampler:
         # For speed purposes, you may wish to add additional member variable(s) that
         # cache computations that will be reused in the re-sampling functions
         # YOUR CODE HERE?
-        self.wt = self.weights / np.sum(self.weights)
-        self.M = len(self.wt)
 
         if state_lock is None:
             self.state_lock = Lock()
@@ -42,9 +40,8 @@ class ReSampler:
         self.state_lock.acquire()
 
         # YOUR CODE HERE
-        num_pts = self.weights.shape[0]
-        pts = np.random.choice(num_pts, num_pts, p=self.weights)
-        self.particles[:] = self.particles[pts][:]
+        Indices = np.random.choice(self.weights.shape[0], self.weights.shape[0], p=self.weights)
+        self.particles[:] = self.particles[Indices][:]
 
         self.state_lock.release()
 
@@ -57,18 +54,20 @@ class ReSampler:
         self.state_lock.acquire()
 
         # YOUR CODE HERE
-        pts = np.zeros_like(self.particles)
+        self.weights /= np.sum(self.weights)
+        particles_tmp = np.zeros_like(self.particles)
 
-        r = np.random.rand(1)/self.M
-        c = self.wt[0]
+        M = len(self.weights)
+        r = (1.0/M) * np.random.rand(1)
+        c = self.weights[0]
         i = 0
-        for m in range(self.M):  # m starts from 0 instead of 1
-            u = r + float(m)/self.M
-            while u > c:
+        for m in range(M):
+            U = r + float(m)/M
+            while U > c:
                 i += 1
-                c += self.wt[i]
-            pts[m] = self.particles[i]
-        self.particles[:] = pts[:]
+                c = c+self.weights[i]
+            particles_tmp[m] = self.particles[i]
+        self.particles[:] = particles_tmp[:]
 
         self.state_lock.release()
 
