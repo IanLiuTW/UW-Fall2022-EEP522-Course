@@ -47,12 +47,12 @@ class HaltonPlanner(object):
                     if cid == self.tid:
                         self.open[cid] = g_val
                         plan = self.get_solution(cid)
-                        plan = self.post_process(plan, 0.2)
+                        plan = self.post_process(plan, 0.5)
                         print("Cost: ", self.cost)
                         print("Plan Indices: ", self.planIndices)
                         print("Plan Length: ", len(plan))
                         print("Time: ", time.time() - t1)
-                        self.simulate(plan)
+                        # self.simulate(plan)
                         return plan
 
                     self.gValues[cid] = g_val
