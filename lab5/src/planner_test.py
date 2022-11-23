@@ -6,7 +6,7 @@ from lab5.srv import *
 import Utils
 from nav_msgs.srv import GetMap
 
-PLANNER_SERVICE_TOPIC = '/planner_node/get_plan'
+PLANNER_SERVICE_TOPIC = '/planner_node/get_car_plan'
 
 # Testing pose sets:
 SOURCE1 = [156, 1080, 0.0]
@@ -31,7 +31,9 @@ if __name__ == '__main__':
     get_plan = rospy.ServiceProxy(PLANNER_SERVICE_TOPIC, GetPlan)
 
     try:
-        resp = get_plan(Utils.map_to_world(SOURCE1, map_info), Utils.map_to_world(TARGET1, map_info))
+        # resp = get_plan(Utils.map_to_world(SOURCE1, map_info), Utils.map_to_world(TARGET1, map_info))
+        # resp = get_plan(Utils.map_to_world(SOURCE2, map_info), Utils.map_to_world(TARGET2, map_info))
+        resp = get_plan(Utils.map_to_world(SOURCE3, map_info), Utils.map_to_world(TARGET3, map_info))
         print np.array(resp.plan).reshape(-1, 3)
         print resp.success
     except rospy.ServiceException, e:

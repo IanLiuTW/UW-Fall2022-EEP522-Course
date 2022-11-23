@@ -18,6 +18,8 @@ class HaltonPlanner(object):
     # Assumes that the source and target were inserted just prior to calling this
     # Returns the generated plan
     def plan(self):
+        t1 = time.time()
+
         self.sid = self.planningEnv.graph.number_of_nodes() - 2  # Get source id
         self.tid = self.planningEnv.graph.number_of_nodes() - 1  # Get target id
 
@@ -27,45 +29,58 @@ class HaltonPlanner(object):
         self.gValues = {self.sid: 0}  # A mapping from node to shortest found path length to that node
         self.planIndices = []
         self.cost = 0
-        # ------------------------------------------------------------
         # YOUR CODE HERE
-        #
-        # Implement A*
-        # Functions that you will probably use
-        # - self.get_solution()
-        # - self.planningEnv.get_successors()
-        # - self.planningEnv.get_distance()
-        # - self.planningEnv.get_heuristic()
-        # Note that each node in the graph has both an associated id and configuration
-        # You should be searching over ids, not configurations. get_successors() will return
-        #   the ids of nodes that can be reached. Once you have a path plan
-        #   of node ids, get_solution() will compute the actual path in SE(2) based off of
-        #   the node ids that you have found.
-        # -------------------------------------------------------------
+        while self.open:
+            nid = min(self.open, key=self.open.get)
+            for cid in self.planningEnv.get_successors(nid):
+                if cid in self.closed:
+                    continue
+                if not self.planningEnv.manager.get_edge_validity(
+                        self.planningEnv.get_config(nid), self.planningEnv.get_config(cid)):
+                    continue
+
+                g_val = self.gValues[nid] + self.planningEnv.get_distance(nid, cid)
+                if cid not in self.open or g_val < self.gValues[cid]:
+                    self.parent[cid] = nid
+
+                    # target reached
+                    if cid == self.tid:
+                        self.open[cid] = g_val
+                        plan = self.get_solution(cid)
+                        plan = self.post_process(plan, 0.2)
+                        print("Cost: ", self.cost)
+                        print("Plan Indices: ", self.planIndices)
+                        print("Plan Length: ", len(plan))
+                        print("Time: ", time.time() - t1)
+                        self.simulate(plan)
+                        return plan
+
+                    self.gValues[cid] = g_val
+                    self.open[cid] = g_val + self.planningEnv.get_heuristic(cid, self.tid)
+            self.open.pop(nid)
+            self.closed[nid] = 1
 
         return []
 
     # Try to improve the current plan by repeatedly checking if there is a shorter path between random pairs of points in the path
     def post_process(self, plan, timeout):
-
         t1 = time.time()
+
         elapsed = 0
+        len_plan = len(plan)
         while elapsed < timeout:  # Keep going until out of time
-            # ---------------------------------------------------------
             # YOUR CODE HERE
-
-            # Pseudocode
-
-            # Pick random id i
-            # Pick random id j
-            # Redraw if i == j
-            # Switch i and j if i > j
-
-            # if we can find path between i and j (Hint: look inside ObstacleManager.py for a suitable function)
-            # Get the path
-            # Reformat the plan such that the new path is inserted and the old section of the path is removed between i and j
-            # Be sure to CAREFULLY inspect the data formats of both the original plan and the plan returned
-            # to ensure that you edit the path correctly
+            i, j = numpy.random.randint(len_plan, size=2)
+            if i == j:
+                continue
+            if i > j:
+                i, j = j, i
+            startConfig = plan[i]
+            endConfig = plan[j]
+            if self.planningEnv.manager.get_edge_validity(startConfig, endConfig):
+                list_x, list_y, _ = self.planningEnv.manager.discretize_edge(startConfig, endConfig)
+                plan[i:j] = [list(a) for a in zip(list_x, list_y)]
+                len_plan = len(plan)
 
             elapsed = time.time() - t1
         return plan

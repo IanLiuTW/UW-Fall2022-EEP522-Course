@@ -76,38 +76,28 @@ class PlannerNode(object):
 
     def get_plan_cb(self, req):
         self.source_lock.acquire()
-        self.source_pose = [req.source.pose.position.x,
-                            req.source.pose.position.y]
-        self.source_yaw = Utils.quaternion_to_angle(req.source.pose.orientation)
+        self.source_pose = req.source[:2]
+        self.source_yaw = req.source[2]
         self.source_updated = True
         self.source_lock.release()
 
         self.target_lock.acquire()
-        self.target_pose = [req.target.pose.position.x,
-                            req.target.pose.position.y]
-        self.target_yaw = Utils.quaternion_to_angle(req.target.pose.orientation)
+        self.target_pose = req.target[:2]
+        self.target_yaw = req.target[2]
         self.target_updated = True
         self.target_lock.release()
 
         self.plan_lock.acquire()
         self.update_plan()
 
+        gpr = GetPlanResponse()
         if self.cur_plan is not None:
-            gpr = GetPlanResponse()
-            gpr.plan.header.frame_id = '/map'
-            gpr.plan.header.stamp = rospy.Time.now()
-            for i in xrange(len(self.cur_plan)):
-                pose = Pose()
-                pose.position.x = self.cur_plan[i][0]
-                pose.position.y = self.cur_plan[i][1]
-                pose.position.z = 0.0
-                pose.orientation = Utils.angle_to_quaternion(self.cur_plan[i][2])
-                gpr.plan.poses.append(pose)
-            self.plan_lock.release()
-            return gpr
+            gpr.plan = self.cur_plan.flatten().tolist()
+            gpr.success = True
         else:
-            self.plan_lock.release()
-            return
+            gpr.success = False
+        self.plan_lock.release()
+        return gpr
 
     def source_cb(self, msg):
         self.source_lock.acquire()
@@ -204,6 +194,7 @@ class PlannerNode(object):
 
             print '[Planner Node] Computing plan...'
             self.cur_plan = self.planner.plan()
+            # TODO self.cur_plan = self.planner.plan_lazy()
 
             if self.cur_plan is not None:
                 self.cur_plan = self.add_orientation(self.cur_plan)
