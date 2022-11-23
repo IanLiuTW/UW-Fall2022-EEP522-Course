@@ -55,9 +55,9 @@ class ObstacleManager(object):
 
         if left < 0 or right >= self.mapWidth or front < 0 or back >= self.mapHeight:
             return False
-        if self.mapImageBW[mapConfig[1], mapConfig[0]] == 0 \
-                or self.mapImageBW[front, left] == 0 or self.mapImageBW[front, right] == 0 \
-                or self.mapImageBW[back, left] == 0 or self.mapImageBW[back, right] == 0:
+        if self.mapImageBW[mapConfig[1], mapConfig[0]] != 0 \
+                or self.mapImageBW[front, left] != 0 or self.mapImageBW[front, right] != 0 \
+                or self.mapImageBW[back, left] != 0 or self.mapImageBW[back, right] != 0:
             return False
         return True
 
@@ -96,7 +96,7 @@ class ObstacleManager(object):
         # Discretize the path with the discretized_edge function above
         # Check if all configurations along path are obstructed
         # -----------------------------------------------------------
-        list_x, list_y, edgeLength = self.discretize_edge(config1, config2)
+        list_x, list_y, _ = self.discretize_edge(config1, config2)
         for config in zip(list_x, list_y):
             if not self.get_state_validity(config):
                 return False
