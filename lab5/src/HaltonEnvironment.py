@@ -2,11 +2,12 @@
 # Take map and call the obstacle manager and pass it to the obstacle manager
 # Create the successor function for different representations of the configuration space
 
-import os
 import math
-import numpy
+import os
+
 import GraphGenerator
 import networkx as nx
+import numpy
 from ObstacleManager import ObstacleManager
 
 

@@ -36,4 +36,3 @@ if __name__ == '__main__':
         print resp.success
     except rospy.ServiceException, e:
         print 'Service call failed: %s' % e
-

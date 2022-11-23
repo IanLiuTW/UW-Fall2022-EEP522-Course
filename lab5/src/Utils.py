@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-import rospy
+import matplotlib.pyplot as plt
 import numpy as np
-
+import rospy
+import tf
+import tf.transformations
+from geometry_msgs.msg import (Point, Point32, PointStamped, Polygon,
+                               PolygonStamped, Pose, PoseArray, PoseStamped,
+                               PoseWithCovarianceStamped, Quaternion)
 from std_msgs.msg import Header
 from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Point, Pose, PoseStamped, PoseArray, Quaternion, PolygonStamped, Polygon, Point32, \
-    PoseWithCovarianceStamped, PointStamped
-import tf.transformations
-import tf
-import matplotlib.pyplot as plt
 
 
 def angle_to_quaternion(angle):
