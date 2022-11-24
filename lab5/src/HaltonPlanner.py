@@ -9,7 +9,6 @@ from matplotlib import pyplot as plt
 
 
 class HaltonPlanner(object):
-
     # planningEnv: Should be a HaltonEnvironment
     def __init__(self, planningEnv):
         self.planningEnv = planningEnv
@@ -65,8 +64,8 @@ class HaltonPlanner(object):
     # Try to improve the current plan by repeatedly checking if there is a shorter path between random pairs of points in the path
     def post_process(self, plan, timeout):
         t1 = time.time()
-
         elapsed = 0
+
         len_plan = len(plan)
         while elapsed < timeout:  # Keep going until out of time
             # YOUR CODE HERE
@@ -75,8 +74,8 @@ class HaltonPlanner(object):
                 continue
             if i > j:
                 i, j = j, i
-            startConfig = plan[i]
-            endConfig = plan[j]
+
+            startConfig, endConfig = plan[i], plan[j]
             if self.planningEnv.manager.get_edge_validity(startConfig, endConfig):
                 list_x, list_y, _ = self.planningEnv.manager.discretize_edge(startConfig, endConfig)
                 plan[i:j] = [list(a) for a in zip(list_x, list_y)]
@@ -88,7 +87,6 @@ class HaltonPlanner(object):
     # Backtrack across parents in order to recover path
     # vid: The id of the last node in the graph
     def get_solution(self, vid):
-
         # Get all the node ids
         planID = []
         while vid is not None:
