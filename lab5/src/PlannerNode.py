@@ -26,7 +26,8 @@ class PlannerNode(object):
                  pub_topic,
                  service_topic,
                  car_width,
-                 car_length):
+                 car_length,
+                 algo):
 
         print("[Planner Node] Getting map from service...")
         rospy.wait_for_service(map_service_name)
@@ -71,6 +72,8 @@ class PlannerNode(object):
             self.plan_service = rospy.Service(service_topic, GetPlan, self.get_plan_cb)
         else:
             self.plan_service = None
+
+        self.algo = algo
 
         print '[Planner Node] Ready to plan'
 
@@ -193,8 +196,11 @@ class PlannerNode(object):
             self.environment.set_source_and_target(source_pose, target_pose)
 
             print '[Planner Node] Computing plan...'
-            self.cur_plan = self.planner.plan()
-            # TODO self.cur_plan = self.planner.plan_lazy()
+            print(self.algo)
+            if self.algo == 'astar_lazy':
+                self.cur_plan = self.planner.plan_lazy()
+            else:
+                self.cur_plan = self.planner.plan()
 
             if self.cur_plan is not None:
                 self.cur_plan = self.add_orientation(self.cur_plan)
@@ -220,6 +226,7 @@ if __name__ == '__main__':
     service_topic = rospy.get_param("~service_topic", None)
     car_width = rospy.get_param("/car_kinematics/car_width", 0.33)
     car_length = rospy.get_param("/car_kinematics/car_length", 0.33)
+    algo = rospy.get_param("~algo", "astar")
 
     pn = PlannerNode(map_service_name,
                      halton_points,
@@ -230,7 +237,8 @@ if __name__ == '__main__':
                      pub_topic,
                      service_topic,
                      car_width,
-                     car_length)
+                     car_length,
+                     algo)
 
     while not rospy.is_shutdown():
         if pub_topic is not None:

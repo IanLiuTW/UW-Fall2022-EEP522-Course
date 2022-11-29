@@ -61,6 +61,85 @@ class HaltonPlanner(object):
 
         return []
 
+    def plan_lazy(self):
+        t1 = time.time()
+
+        self.sid = self.planningEnv.graph.number_of_nodes() - 2  # Get source id
+        self.tid = self.planningEnv.graph.number_of_nodes() - 1  # Get target id
+
+        self.closed = {}  # The closed list
+        self.parent = {self.sid: None}  # A dictionary mapping children to their parents
+        self.open = {self.sid: 0 + self.planningEnv.get_heuristic(self.sid, self.tid)}  # The open list
+        self.gValues = {self.sid: 0}  # A mapping from node to shortest found path length to that node
+        self.planIndices = []
+        self.cost = 0
+        # YOUR CODE HERE
+        nid = None
+        while self.open:
+            if nid is None:
+                nid = min(self.open, key=self.open.get)
+                self.open.pop(nid)
+                self.closed[nid] = 1
+                for cid in self.planningEnv.get_successors(nid):
+                    if cid in self.closed:
+                        continue
+                    if not self.planningEnv.manager.get_edge_validity(
+                            self.planningEnv.get_config(nid), self.planningEnv.get_config(cid)):
+                        continue
+
+                    g_val = self.gValues[nid] + self.planningEnv.get_distance(nid, cid)
+                    if cid not in self.open or g_val < self.gValues[cid]:
+                        self.parent[cid] = nid
+
+                        if cid == self.tid:
+                            self.open[cid] = g_val
+                            plan = self.get_solution(cid)
+                            plan = self.post_process(plan, 0.5)
+                            print("Cost: ", self.cost)
+                            print("Plan Indices: ", self.planIndices)
+                            print("Plan Length: ", len(plan))
+                            print("Time: ", time.time() - t1)
+                            # self.simulate(plan)
+                            return plan
+
+                        self.gValues[cid] = g_val
+                        self.open[cid] = g_val + self.planningEnv.get_heuristic(cid, self.tid)
+                nid = min(self.open, key=self.open.get)
+            else:
+                cid = self.planningEnv.get_successors(nid)[0]
+                self.open.pop(nid)
+                self.closed[nid] = 1
+                if cid in self.closed:
+                    nid = None
+                    continue
+                if not self.planningEnv.manager.get_edge_validity(
+                        self.planningEnv.get_config(nid), self.planningEnv.get_config(cid)):
+                    nid = None
+                    continue
+                g_val = self.gValues[nid] + self.planningEnv.get_distance(nid, cid)
+                if cid not in self.open or g_val < self.gValues[cid]:
+                    self.parent[cid] = nid
+
+                    if cid == self.tid:
+                        self.open[cid] = g_val
+                        plan = self.get_solution(cid)
+                        plan = self.post_process(plan, 0.5)
+                        print("Cost: ", self.cost)
+                        print("Plan Indices: ", self.planIndices)
+                        print("Plan Length: ", len(plan))
+                        print("Time: ", time.time() - t1)
+                        # self.simulate(plan)
+                        return plan
+
+                    self.gValues[cid] = g_val
+                    self.open[cid] = g_val + self.planningEnv.get_heuristic(cid, self.tid)
+                else:
+                    nid = None
+                    continue
+                nid = cid
+
+        return []
+
     # Try to improve the current plan by repeatedly checking if there is a shorter path between random pairs of points in the path
     def post_process(self, plan, timeout):
         t1 = time.time()
