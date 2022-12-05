@@ -39,5 +39,14 @@ rostopic echo /planner_node/car_plan
 rostopic echo /car/mux/ackermann_cmd_mux/input/navigation
 rosmsg info ackermann_msgs/AckermannDriveStamped
 
-scp -r /home/robot/catkin_ws/src/shared/lab4 robot@10.42.0.1:~/catkin_ws/src
+## Lab5
 scp -r /home/robot/catkin_ws/src/mushr_sim/maps robot@10.42.0.1:~/
+
+## Final
+scp -r /home/robot/catkin_ws/src/shared/final robot@10.42.0.1:~/catkin_ws/src
+
+roslaunch mushr_base teleop.launch
+roslaunch final ParticleFilter.launch
+roslaunch final PlannerNode.launch
+roslaunch final line_follower.launch
+roslaunch final final.launch

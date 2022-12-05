@@ -32,8 +32,8 @@
 		<param name="servo_state_topic" value="$(arg servo_state_topic)" />
 		<param name="scan_topic" value="$(arg scan_topic)"/>
 		<param name="laser_ray_step" value="$(arg laser_ray_step)"/>
-    <param name="exclude_max_range_rays" value="$(arg exclude_max_range_rays)" />
+		<param name="exclude_max_range_rays" value="$(arg exclude_max_range_rays)" />
 		<param name="max_range_meters" value="$(arg max_range_meters)" />
-    <param name="resample_type" value="$(arg resample_type)" />
+		<param name="resample_type" value="$(arg resample_type)" />
 	</node>
 </launch>

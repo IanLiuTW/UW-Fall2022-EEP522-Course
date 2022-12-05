@@ -225,7 +225,7 @@ def follow_bag():
 
     ads = AckermannDriveStamped()
     ads.drive.speed = -2.0
-    for _ in range(5):
+    for _ in range(13):
         pub.publish(ads)
         rate.sleep()
 
