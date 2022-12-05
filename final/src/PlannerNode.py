@@ -55,6 +55,8 @@ class PlannerNode(object):
 
         self.orientation_window_size = 21
 
+        self.complete_plan = []
+
         if pub_topic is not None:
             self.plan_pub = rospy.Publisher(pub_topic, PoseArray, queue_size=1)
             self.source_sub = rospy.Subscriber(source_topic,
@@ -114,6 +116,13 @@ class PlannerNode(object):
         self.source_lock.release()
 
     def target_cb(self, msg):
+        if self.target_pose is not None:
+            self.source_lock.acquire()
+            self.source_pose = self.target_pose
+            self.source_yaw = self.target_yaw
+            self.source_updated = True
+            self.source_lock.release()
+
         self.target_lock.acquire()
 
         print '[Planner Node] Got new target'
@@ -204,13 +213,15 @@ class PlannerNode(object):
 
             if self.cur_plan is not None:
                 self.cur_plan = self.add_orientation(self.cur_plan)
+                for p in self.cur_plan:
+                    self.complete_plan.append(p)
                 #self.cur_plan = self.planner.post_process(self.cur_plan, 5)
                 print '[Planner Node] ...plan complete'
             else:
                 print '[Planner Node] ...could not compute a plan'
 
-        if (self.cur_plan is not None) and (self.plan_pub is not None):
-            self.publish_plan(self.cur_plan)
+        if (self.complete_plan is not None) and (self.plan_pub is not None):
+            self.publish_plan(self.complete_plan)
 
 
 if __name__ == '__main__':
