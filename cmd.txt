@@ -1,0 +1,43 @@
+## Main
+roscore  		#rc
+rosrun rviz rviz  	#rviz
+~/ros.sh start
+~/ros.sh stop
+
+## Sim
+roslaunch mushr_sim teleop.launch
+roslaunch planning_utils planner_node.launch
+### Sim settings
+#### change map
+vim ~/catkin_ws/src/mushr_sim/launch/map_server.launch  
+
+## V3 MuSHR
+ssh robot@10.42.0.1	#password: prl_robot
+roslaunch mushr_base teleop.launch
+scp -r /home/robot/catkin_ws/src/shared/package robot@10.42.0.1:~/catkin_ws/src
+sudo shutdown -P now
+
+## ROS Bag
+rosbag record -O [name of file to record to] [name of topic]
+rosbag record ~/catkin_ws/src/lab2/bag -O test.bag /car/mux/ackermann_cmd_mux/input/teleop
+rosbag play [name of file recorded to]
+rosbag play ~/catkin_ws/src/lab2/bag/test.bag
+
+## ROS Topic
+rostopic echo topic
+rostopic hz topic
+
+## Recalibrate
+vim ~/catkin_ws/src/mushr/mushr_base/vesc/vesc_main/config/racecar-uw-nano/vesc.yaml
+# speed_to_erpm_gain=-3500, steering_angle_to_servo_offset=0.52, steering_angle_to_servo_gain=0.65
+
+## Lab3
+roslaunch planning_utils planner_node.launch
+rosbag play ~/catkin_ws/src/shared/lab3/bags/line_follower.bag
+rostopic echo /car/car_pose
+rostopic echo /planner_node/car_plan
+rostopic echo /car/mux/ackermann_cmd_mux/input/navigation
+rosmsg info ackermann_msgs/AckermannDriveStamped
+
+scp -r /home/robot/catkin_ws/src/shared/lab4 robot@10.42.0.1:~/catkin_ws/src
+scp -r /home/robot/catkin_ws/src/mushr_sim/maps robot@10.42.0.1:~/
