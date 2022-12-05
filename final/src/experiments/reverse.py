@@ -3,12 +3,12 @@
 import rospy
 from ackermann_msgs.msg import AckermannDriveStamped
 
-PUB_TOPIC = '/car/mux/ackermann_cmd_mux/input/teleop'
-PUB_RATE = 5
-
 
 def follow_bag():
+    PUB_TOPIC = '/car/mux/ackermann_cmd_mux/input/teleop'
+    PUB_RATE = 5
     pub = rospy.Publisher(PUB_TOPIC, AckermannDriveStamped, queue_size=100)
+
     rate = rospy.Rate(PUB_RATE)
 
     ads = AckermannDriveStamped()

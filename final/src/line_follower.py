@@ -216,6 +216,20 @@ class LineFollower:
             json.dump(self.errors, f)
 
 
+def follow_bag():
+    PUB_TOPIC = '/car/mux/ackermann_cmd_mux/input/teleop'
+    PUB_RATE = 5
+    pub = rospy.Publisher(PUB_TOPIC, AckermannDriveStamped, queue_size=100)
+
+    rate = rospy.Rate(PUB_RATE)
+
+    ads = AckermannDriveStamped()
+    ads.drive.speed = -2.0
+    for _ in range(5):
+        pub.publish(ads)
+        rate.sleep()
+
+
 def main():
 
     rospy.init_node('line_follower', anonymous=True)  # Initialize the node
@@ -228,8 +242,8 @@ def main():
     # 'Starting' values are ones you should consider tuning for your system
     # YOUR CODE HERE
     plan_topic = "/planner_node/car_plan"  # Default val: '/planner_node/car_plan'
-    # pose_topic = "/car/car_pose"  # Default val: '/car/pose'
-    pose_topic = 'pf/viz/inferred_pose'
+    pose_topic = "/car/car_pose"  # Default val: '/car/pose'
+    # pose_topic = 'pf/viz/inferred_pose'
     plan_lookahead = 5  # Starting val: 5
     translation_weight = 1.0  # Starting val: 1.0
     rotation_weight = 0.0  # Starting val: 0.0
@@ -256,6 +270,8 @@ def main():
     #     Each array is of the form [x,y,theta]
     # Create a LineFollower object
     # YOUR CODE HERE
+    follow_bag()
+
     pose_array = rospy.wait_for_message(plan_topic, PoseArray)
     plan = [np.array([pose.position.x, pose.position.y, utils.quaternion_to_angle(pose.orientation)])
             for pose in pose_array.poses]

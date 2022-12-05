@@ -1,0 +1,7 @@
+<launch>
+
+	<node pkg="final" type="WaypointsPublisher.py" name="WaypointsPublisher" output="screen">
+        <param name="static_map" type="string" value="static_map" />
+	</node>
+
+</launch>
