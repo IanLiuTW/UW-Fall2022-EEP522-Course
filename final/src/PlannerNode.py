@@ -7,7 +7,7 @@ import sys
 
 from nav_msgs.srv import GetMap
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Pose, PoseArray
-from lab5.srv import *
+from final.srv import *
 
 from HaltonPlanner import HaltonPlanner
 from HaltonEnvironment import HaltonEnvironment
