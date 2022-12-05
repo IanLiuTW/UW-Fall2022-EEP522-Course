@@ -12,7 +12,7 @@ from final.srv import *
 from HaltonPlanner import HaltonPlanner
 from HaltonEnvironment import HaltonEnvironment
 import GraphGenerator
-import Utils
+import Putils
 
 
 class PlannerNode(object):
@@ -110,7 +110,7 @@ class PlannerNode(object):
         print '[Planner Node] Got new source'
         self.source_pose = [msg.pose.pose.position.x,
                             msg.pose.pose.position.y]
-        self.source_yaw = Utils.quaternion_to_angle(msg.pose.pose.orientation)
+        self.source_yaw = Putils.quaternion_to_angle(msg.pose.pose.orientation)
         self.source_updated = True
 
         self.source_lock.release()
@@ -128,7 +128,7 @@ class PlannerNode(object):
         print '[Planner Node] Got new target'
         self.target_pose = [msg.pose.position.x,
                             msg.pose.position.y]
-        self.target_yaw = Utils.quaternion_to_angle(msg.pose.orientation)
+        self.target_yaw = Putils.quaternion_to_angle(msg.pose.orientation)
         self.target_updated = True
 
         self.target_lock.release()
@@ -142,7 +142,7 @@ class PlannerNode(object):
             pose.position.x = config[0]
             pose.position.y = config[1]
             pose.position.z = 0.0
-            pose.orientation = Utils.angle_to_quaternion(config[2])
+            pose.orientation = Putils.angle_to_quaternion(config[2])
             pa.poses.append(pose)
         self.plan_pub.publish(pa)
 

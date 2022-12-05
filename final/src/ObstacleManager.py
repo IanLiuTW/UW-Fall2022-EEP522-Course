@@ -2,7 +2,7 @@ import math
 
 import cv2
 import numpy
-import Utils
+import Putils
 
 
 class ObstacleManager(object):
@@ -35,7 +35,7 @@ class ObstacleManager(object):
     def get_state_validity(self, config):
 
         # Convert the configuration to map-coordinates -> mapConfig is in pixel-space
-        mapConfig = Utils.world_to_map(config, self.map_info)
+        mapConfig = Putils.world_to_map(config, self.map_info)
 
         # ---------------------------------------------------------
         # YOUR CODE HERE
