@@ -3,8 +3,8 @@
 	<arg name="translation_weight" default= "1.0" /> <!-- Starting val: 1.0 -->
 	<arg name="rotation_weight" default= "0.0" /> <!-- Starting val: 0.0 -->
     <arg name="kp" default="1.0" /> <!-- Starting val: 1.0 -->
-	<arg name="ki" default= "0.0" /> <!-- Starting val: 0.0 -->
-	<arg name="kd" default= "0.3" /> <!-- Starting val: 0.0 -->
+	<arg name="ki" default= "0.05" /> <!-- Starting val: 0.05 -->
+	<arg name="kd" default= "0.3" /> <!-- Starting val: 0.3 -->
     <arg name="error_buff_length" default="10" /> <!-- Starting val: 10 -->
 	<arg name="speed" default= "1.0" /> <!-- Default val: 1.0 -->
 
