@@ -242,8 +242,8 @@ def main():
     # 'Starting' values are ones you should consider tuning for your system
     # YOUR CODE HERE
     plan_topic = "/planner_node/car_plan"  # Default val: '/planner_node/car_plan'
-    pose_topic = "/car/car_pose"  # Default val: '/car/pose'
-    # pose_topic = 'pf/viz/inferred_pose'
+    # pose_topic = "/car/car_pose"  # Default val: '/car/pose'
+    pose_topic = 'pf/viz/inferred_pose'
     plan_lookahead = 5  # Starting val: 5
     translation_weight = 1.0  # Starting val: 1.0
     rotation_weight = 0.0  # Starting val: 0.0
