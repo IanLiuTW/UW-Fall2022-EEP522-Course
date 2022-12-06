@@ -45,8 +45,8 @@ scp -r /home/robot/catkin_ws/src/mushr_sim/maps robot@10.42.0.1:~/
 ## Final
 scp -r /home/robot/catkin_ws/src/shared/final robot@10.42.0.1:~/catkin_ws/src
 
-roslaunch mushr_base teleop.launch # tele
-roslaunch final ParticleFilter.launch # part
-roslaunch final PlannerNode.launch # plan
-roslaunch final final.launch # final 
-roslaunch final line_follower.launch #line
+roslaunch mushr_base teleop.launch  # tele
+roslaunch final ParticleFilter.launch  # part
+roslaunch final PlannerNode.launch  # plan
+roslaunch final final.launch  # final 
+roslaunch final line_follower.launch  # line

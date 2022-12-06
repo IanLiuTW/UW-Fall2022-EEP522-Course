@@ -11,11 +11,11 @@ from std_msgs.msg import Float64
 from vesc_msgs.msg import VescStateStamped
 
 # YOUR CODE HERE (Set these values and use them in motion_cb)
-KM_V_NOISE = 0.05  # 0.05  # Kinematic car velocity noise std dev
-KM_DELTA_NOISE = 0.12  # 0.12  # Kinematic car delta noise std dev
-KM_X_FIX_NOISE = 0.01  # 0.02  # Kinematic car x position constant noise std dev
-KM_Y_FIX_NOISE = 0.01  # 0.02  # Kinematic car y position constant noise std dev
-KM_THETA_FIX_NOISE = 0.1  # Kinematic car theta constant noise std dev
+KM_V_NOISE = 0.8  # Kinematic car velocity noise std dev
+KM_DELTA_NOISE = 0.01  # Kinematic car delta noise std dev
+KM_X_FIX_NOISE = 0.01  # Kinematic car x position constant noise std dev
+KM_Y_FIX_NOISE = 0.01  # Kinematic car y position constant noise std dev
+KM_THETA_FIX_NOISE = 0.01  # Kinematic car theta constant noise std dev
 
 '''
   Propagates the particles forward based on the velocity and steering angle of the car
